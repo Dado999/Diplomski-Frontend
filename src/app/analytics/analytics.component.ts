@@ -72,6 +72,7 @@ export class AnalyticsComponent implements OnInit {
   }
   updateTotalChart(totalAmount: number): void {
     const transactionCount = this.totalChartData.labels.length + 1;
+    this.totalAmount = totalAmount;
     this.totalChartData.labels.push(transactionCount.toString());
     this.totalChartData.datasets[0].data.push(totalAmount);
     if(this.charts.first.chart)
