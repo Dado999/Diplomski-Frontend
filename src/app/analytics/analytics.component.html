@@ -1,24 +1,10 @@
 <div class="analytics-container">
-  <div class="transactions-container">
-    <h2>Live Transactions</h2>
-    <ul class="transactions-list">
-      <li *ngFor="let transaction of transactions; let i = index"
-          class="transaction-item">
-        <p><strong>ID:</strong> {{ transaction.id }}</p>
-        <p><strong>User ID:</strong> {{ transaction.userId }}</p>
-        <p><strong>Date:</strong> {{ transaction.createdDate | date:'short' }}</p>
-        <p><strong>From Account:</strong> {{ transaction.fromAccountId }}</p>
-        <p><strong>To Account:</strong> {{ transaction.toAccountId }}</p>
-        <p><strong>Amount:</strong> {{ transaction.amount | currency }}</p>
-      </li>
-    </ul>
-  </div>
   <div class="chart-container">
     <h2>Total Transaction Chart</h2>
     <canvas
       baseChart
       [data]="totalChartData"
-      type="bubble"
+      type="line"
       class="totalChart"
       [options]="options"
     ></canvas>
@@ -41,11 +27,11 @@
       [options]="options"
     >
     </canvas>
-    <h2>Bank collapse</h2>
+    <h2>Response time</h2>
     <canvas
       baseChart
       type="line"
-      [data]="bankCollapseData"
+      [data]="responseTimeData"
       class="averageChart"
       [options]="options"
     >
@@ -54,12 +40,12 @@
   <div class="card-flex-justify-center">
     <div class="sliders">
       <!-- Label for the first slider -->
-      <label for="slider1">MIN</label>
+      <label for="slider1">Number of transactions</label>
       <mat-slider
         id="slider1"
-        min="-1000"
-        max="0"
-        step="10"
+        min="1000"
+        max="20000"
+        step="100"
         showTickMarks
         discrete
         vertical
@@ -68,12 +54,12 @@
       </mat-slider>
 
       <!-- Label for the second slider -->
-      <label for="slider2">MAX</label>
+      <label for="slider2">Seconds</label>
       <mat-slider
         id="slider2"
-        min="1"
-        max="1000"
-        step="10"
+        min="0"
+        max="10"
+        step="1"
         showTickMarks
         discrete
       >

@@ -1,4 +1,4 @@
 export interface TransactionLimit {
-  minValue: number;
-  maxValue: number;
+  transactionNumber: number;
+  duration: number;
 }

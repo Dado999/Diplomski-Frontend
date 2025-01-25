@@ -1,6 +1,5 @@
-import {ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren} from '@angular/core';
-import {CommonModule, CurrencyPipe, DatePipe, NgForOf} from '@angular/common';
-import {Transaction} from '../transaction';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {CommonModule} from '@angular/common';
 import {BaseChartDirective, NgChartsModule} from 'ng2-charts';
 import {Chart, registerables} from 'chart.js';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
@@ -12,28 +11,31 @@ import {HttpClient} from '@angular/common/http';
 import {TransactionLimit} from '../transaction-limit';
 import {ProcessedTransaction} from '../processed-transaction';
 
+Chart.defaults.animation = false;
 Chart.register(...registerables);
 @Component({
   selector: 'app-analytics',
-  imports: [ NgForOf, CurrencyPipe, DatePipe, NgChartsModule, FormsModule, SliderModule, ButtonModule, CommonModule, MatSliderModule, MatButton, ReactiveFormsModule ],
+  imports: [ NgChartsModule, FormsModule, SliderModule, ButtonModule, CommonModule, MatSliderModule, MatButton, ReactiveFormsModule ],
   templateUrl: './analytics.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: true,
   styleUrl: './analytics.component.css'
 })
+
 export class AnalyticsComponent implements OnInit {
-  minValue: number = -500;
-  maxValue: number = 500;
+
+  minValue: number = 5000;
+  maxValue: number = 2;
   totalAmount: number = 0;
   totalChartData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [], datasets: [{data: [], label: "Total transaction amount", borderColor: 'green'} ] }
   regionChartData :{ labels: string[]; datasets: { data: number[]; label: string }[] } = { labels: ['EUROPE', 'AMERICA', 'ASIA', 'AUSTRALIA'], datasets: [ { data: [0, 0, 0, 0], label: "Transactions by Region", } ] };
   averageChartData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [],  datasets: [ { data: [],  label: "Average transaction amount", borderColor: 'orange' } ] };
-  bankCollapseData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [],  datasets: [ { data: [],  label: "Bank collapse probability",  borderColor: 'red' } ] };
+  responseTimeData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [],  datasets: [ { data: [],  label: "Average system response time",  borderColor: 'brown' }, { data: [],  label: "Response time",  borderColor: 'blue' } ] };
   options = { responsive: true, maintainAspectRatio: true };
-  transactions: Transaction[] = [];
+  transactions: number = 0;
   @ViewChildren(BaseChartDirective) charts!: QueryList<BaseChartDirective>;
   regionChart!: BaseChartDirective;
-  collapseChart!: BaseChartDirective;
-
+  responseChart!: BaseChartDirective;
   constructor(private cdr: ChangeDetectorRef,
               private http: HttpClient) {}
   ngOnInit(): void {
@@ -41,18 +43,22 @@ export class AnalyticsComponent implements OnInit {
   }
   ngAfterViewInit(): void {
     this.regionChart = this.charts.toArray()[2];
-    this.collapseChart = this.charts.toArray()[3];
+    this.responseChart = this.charts.toArray()[3];
   }
   connectToSSE(): void {
     const transactionSource = new EventSource('http://localhost:8079/transactions/sse');
-
     transactionSource.onmessage = (event) => {
       const newTransaction: ProcessedTransaction = JSON.parse(event.data);
-      this.transactions.unshift(newTransaction.transactionDTO);
-      this.updateAverageChart(newTransaction.averageAmount)
-      this.updateTotalChart(newTransaction.totalAmount)
-      this.updateRegionChartData(newTransaction.origin)
-      this.cdr.detectChanges();
+      console.log(newTransaction.elapsedTime)
+      this.transactions++;
+      if(this.transactions % 100 == 0)
+      {
+        // this.updateRegionChartData(newTransaction.origin);
+        this.updateResponseChart(newTransaction.elapsedTime)
+        // this.updateAverageChart(newTransaction.averageAmount)
+        // this.updateTotalChart(newTransaction.totalAmount)
+        this.cdr.detectChanges();
+      }
     };
     this.handleSSEError(transactionSource, () => this.connectToSSE());
   }
@@ -64,20 +70,31 @@ export class AnalyticsComponent implements OnInit {
     };
   }
   updateAverageChart(averageAmount: number): void {
-    const transactionCount = this.averageChartData.labels.length + 1;
-    this.averageChartData.labels.push(transactionCount.toString());
+    this.averageChartData.labels.push((this.transactions).toString());
     this.averageChartData.datasets[0].data.push(averageAmount);
     if(this.charts.last.chart)
       this.charts.last.chart.update();
   }
   updateTotalChart(totalAmount: number): void {
-    const transactionCount = this.totalChartData.labels.length + 1;
     this.totalAmount = totalAmount;
-    this.totalChartData.labels.push(transactionCount.toString());
+    this.totalChartData.labels.push((this.transactions).toString());
     this.totalChartData.datasets[0].data.push(totalAmount);
     if(this.charts.first.chart)
       this.charts.first.chart.update();
-    this.updateBankCollapseChart();
+  }
+  updateResponseChart(responseTime: number): void {
+    this.responseTimeData.labels.push((this.transactions).toString());
+    this.responseTimeData.datasets[1].data.push(responseTime);
+    this.responseTimeData.datasets[0].data = this.applyRollingAverage(this.responseTimeData.datasets[1].data, 100);
+    this.responseChart.chart?.update();
+  }
+
+  private applyRollingAverage(data: number[], windowSize: number): number[] {
+    return data.map((value, index, array) => {
+      const start = Math.max(0, index - windowSize + 1);
+      const subset = array.slice(start, index + 1);
+      return subset.reduce((sum, val) => sum + val, 0) / subset.length;
+    });
   }
   updateRegionChartData(region: string): void {
     const regionIndex = this.regionChartData.labels.indexOf(region);
@@ -91,30 +108,16 @@ export class AnalyticsComponent implements OnInit {
     this.regionChart.chart?.update();
   }
   sendTransactionLimitsToBackend() {
-    const limit: TransactionLimit = {
-      minValue: this.minValue,
-      maxValue: this.maxValue,
+    const settings: TransactionLimit = {
+      transactionNumber: this.minValue,
+      duration: this.maxValue,
     };
-    this.http.post('http://localhost:8079/settings/set-limit', limit).subscribe({
+    this.http.post('http://localhost:8079/transactions/generate', settings).subscribe({
       next: () => console.log('Transaction limits updated successfully!'),
       error: (error) => {
         console.error('Failed to update transaction limits', error);
         alert('Failed to update transaction limits. Please try again.');
       },
     });
-  }
-  private updateBankCollapseChart(): void {
-    const probability = this.getBankCollapseProbability(this.totalAmount);
-    const nextLabelIndex = this.bankCollapseData.labels.length + 1;
-    this.bankCollapseData.labels.push(nextLabelIndex.toString());
-    this.bankCollapseData.datasets[0].data.push(probability);
-    this.collapseChart.chart?.update();
-  }
-  private getBankCollapseProbability(totalAmount: number): number {
-    if (totalAmount >= 0) {
-      return 0;
-    }
-    const collapseThreshold = -4_000_00;
-    return Number((Math.abs(totalAmount) / Math.abs(collapseThreshold)).toFixed(4));
   }
 }

@@ -5,4 +5,5 @@ export interface ProcessedTransaction {
     totalAmount: number;
     averageAmount: number;
     origin: string;
+    elapsedTime: number;
 }

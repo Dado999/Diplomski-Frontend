@@ -63,10 +63,13 @@ averageChart {
   width: 25%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   flex-wrap: wrap;
   border-radius: 8px;
   border: 1px solid #ccc;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  background-color: lightgray;
 }
 .card-flex-justify-center mat-slider{
   width: 45%;
