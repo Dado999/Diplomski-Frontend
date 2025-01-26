@@ -1,4 +1,12 @@
-import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  ViewChildren
+} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BaseChartDirective, NgChartsModule} from 'ng2-charts';
 import {Chart, registerables} from 'chart.js';
@@ -36,6 +44,8 @@ export class AnalyticsComponent implements OnInit {
   @ViewChildren(BaseChartDirective) charts!: QueryList<BaseChartDirective>;
   regionChart!: BaseChartDirective;
   responseChart!: BaseChartDirective;
+  @ViewChildren('chartElement') chartElements!: QueryList<ElementRef>;
+  activeChart: string | null = null;
   constructor(private cdr: ChangeDetectorRef,
               private http: HttpClient) {}
   ngOnInit(): void {
@@ -44,6 +54,18 @@ export class AnalyticsComponent implements OnInit {
   ngAfterViewInit(): void {
     this.regionChart = this.charts.toArray()[2];
     this.responseChart = this.charts.toArray()[3];
+  }
+
+  setActiveChart(chartName: string, index: number): void {
+    this.activeChart = this.activeChart === chartName ? null : chartName;
+
+    if (this.activeChart) {
+      const element = this.chartElements.toArray()[index].nativeElement;
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  isActive(chartName: string): boolean {
+    return this.activeChart === chartName;
   }
   connectToSSE(): void {
     const transactionSource = new EventSource('http://localhost:8079/transactions/sse');

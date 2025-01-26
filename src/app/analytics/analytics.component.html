@@ -1,6 +1,11 @@
 <div class="analytics-container">
   <div class="chart-container">
-    <div class="single-chart">
+    <div
+         #chartElement
+         class="single-chart"
+         [class.active]="isActive('totalTransaction')"
+         (click)="setActiveChart('totalTransaction',0)"
+    >
       <h2>Total Transaction Chart</h2>
       <canvas
         baseChart
@@ -9,6 +14,13 @@
         class="totalChart"
         [options]="options"
       ></canvas>
+    </div>
+    <div
+         #chartElement
+         class="single-chart"
+         [class.active]="isActive('averageTransaction')"
+         (click)="setActiveChart('averageTransaction',1)"
+    >
       <h2>Average Transaction Chart</h2>
       <canvas
         baseChart
@@ -18,6 +30,13 @@
         [options]="options"
       >
       </canvas>
+    </div>
+    <div
+         #chartElement
+         class="single-chart"
+         [class.active]="isActive('responseTime')"
+         (click)="setActiveChart('responseTime', 2)"
+    >
       <h2>Response time</h2>
       <canvas
         baseChart
@@ -27,15 +46,23 @@
         [options]="options"
       >
       </canvas>
+    </div>
+    <div
+         #chartElement
+         class="single-chart"
+         [class.active]="isActive('transactionRegion')"
+         (click)="setActiveChart('transactionRegion',3)"
+    >
       <h2>Transactions by region</h2>
       <canvas
         baseChart
         [data]="regionChartData"
-        type="pie"
+        type="bar"
         class="totalChart"
         [options]="options"
       >
       </canvas>
+    </div>
     </div>
   </div>
   <div class="card-flex-justify-center">
@@ -71,5 +98,3 @@
       <button mat-flat-button (click)="sendTransactionLimitsToBackend()">Set</button>
     </div>
   </div>
-
-</div>

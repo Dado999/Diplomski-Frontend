@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: white;
   color: black;
@@ -17,14 +21,23 @@ body {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  justify-content: center;
   border-radius: 8px;
   border: 1px solid #ccc;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 .single-chart {
   display: flex;
-  flex-direction: row;
-  width:100%;
+  flex-direction: column;
+  width: 24%;
+  padding: 10px;
+  transition: all 0.4s ease;
+  cursor: pointer;
+}
+.single-chart.active {
+  flex: 1 1 60%;
+  z-index: 10;
+  padding: 40px;
 }
 
 canvas{
@@ -40,7 +53,7 @@ averageChart {
   background-color: #ffffe0;
 }
 .card-flex-justify-center{
-  width: 50%;
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -49,14 +62,15 @@ averageChart {
   padding: 5px;
 }
 .card-flex-justify-center mat-slider{
-  width: 45%;
+  width: 100%;
 }
 .sliders{
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: cyan;
+  background-color: #549B8C;
   border-radius: 6px;
+  width: 50%;
 }
 .sliders label{
   margin: 5px;
