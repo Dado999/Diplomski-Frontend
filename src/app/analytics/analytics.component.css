@@ -12,39 +12,19 @@ body {
   margin-left: 5px;
 }
 
-.transactions-container {
-  width: 20%; /* Adjust as needed */
-  max-height: 1000px; /* Set a maximum height */
-  overflow-y: auto; /* Enable vertical scrolling */
-  border: 1px solid #ccc; /* Optional: add a border for clarity */
-  padding: 10px; /* Optional: add padding */
-  border-radius: 8px; /* Optional: rounded corners */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: slight shadow */
-}
-
-.transactions-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.transaction-item {
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #f9f9f9; /* Light background for better readability */
-  border-radius: 5px; /* Rounded corners */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Slight shadow */
-}
-
-.transaction-item:hover {
-  background-color: #f0f0f0;
-}
 .chart-container{
-  width: 25%;
-  padding: 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   border-radius: 8px;
   border: 1px solid #ccc;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+.single-chart {
+  display: flex;
+  flex-direction: row;
+  width:100%;
 }
 
 canvas{
@@ -60,16 +40,13 @@ averageChart {
   background-color: #ffffe0;
 }
 .card-flex-justify-center{
-  width: 25%;
+  width: 50%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: center;
   align-items: center;
-  flex-wrap: wrap;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   background-color: lightgray;
+  padding: 5px;
 }
 .card-flex-justify-center mat-slider{
   width: 45%;
@@ -78,6 +55,8 @@ averageChart {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: cyan;
+  border-radius: 6px;
 }
 .sliders label{
   margin: 5px;
@@ -86,5 +65,7 @@ averageChart {
 .material-button{
   display: flex;
   justify-content: center;
+  padding: 5px;
+  font-size: 15px;
 }
 

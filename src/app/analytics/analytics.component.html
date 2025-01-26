@@ -1,41 +1,42 @@
 <div class="analytics-container">
   <div class="chart-container">
-    <h2>Total Transaction Chart</h2>
-    <canvas
-      baseChart
-      [data]="totalChartData"
-      type="line"
-      class="totalChart"
-      [options]="options"
-    ></canvas>
-    <h2>Transactions by region</h2>
-    <canvas
-      baseChart
-      [data]="regionChartData"
-      type="pie"
-      class="totalChart"
-      [options]="options"
-    ></canvas>
-  </div>
-  <div class="chart-container">
-    <h2>Average Transaction Chart</h2>
-    <canvas
-      baseChart
-      type="line"
-      [data]="averageChartData"
-      class="averageChart"
-      [options]="options"
-    >
-    </canvas>
-    <h2>Response time</h2>
-    <canvas
-      baseChart
-      type="line"
-      [data]="responseTimeData"
-      class="averageChart"
-      [options]="options"
-    >
-    </canvas>
+    <div class="single-chart">
+      <h2>Total Transaction Chart</h2>
+      <canvas
+        baseChart
+        [data]="totalChartData"
+        type="line"
+        class="totalChart"
+        [options]="options"
+      ></canvas>
+      <h2>Average Transaction Chart</h2>
+      <canvas
+        baseChart
+        type="line"
+        [data]="averageChartData"
+        class="averageChart"
+        [options]="options"
+      >
+      </canvas>
+      <h2>Response time</h2>
+      <canvas
+        baseChart
+        type="line"
+        [data]="responseTimeData"
+        class="averageChart"
+        [options]="options"
+      >
+      </canvas>
+      <h2>Transactions by region</h2>
+      <canvas
+        baseChart
+        [data]="regionChartData"
+        type="pie"
+        class="totalChart"
+        [options]="options"
+      >
+      </canvas>
+    </div>
   </div>
   <div class="card-flex-justify-center">
     <div class="sliders">
