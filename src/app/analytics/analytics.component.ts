@@ -1,12 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  OnInit,
-  QueryList,
-  ViewChildren
-} from '@angular/core';
+import {ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, QueryList, ViewChildren} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {BaseChartDirective, NgChartsModule} from 'ng2-charts';
 import {Chart, registerables} from 'chart.js';
@@ -32,11 +24,11 @@ Chart.register(...registerables);
 
 export class AnalyticsComponent implements OnInit {
 
-  minValue: number = 5000;
-  maxValue: number = 2;
+  minValue: number = 1000;
+  maxValue: number = 0;
   totalAmount: number = 0;
   totalChartData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [], datasets: [{data: [], label: "Total transaction amount", borderColor: 'green'} ] }
-  regionChartData :{ labels: string[]; datasets: { data: number[]; label: string }[] } = { labels: ['EUROPE', 'AMERICA', 'ASIA', 'AUSTRALIA'], datasets: [ { data: [0, 0, 0, 0], label: "Transactions by Region", } ] };
+  regionChartData: { labels: string[]; datasets: { data: number[]; label: string; backgroundColor: string[]; borderColor: string[]; borderWidth: number; }[]; } = {labels: ['EUROPE', 'AMERICA', 'ASIA', 'AUSTRALIA'], datasets: [{data: [0, 0, 0, 0], label: "Transactions by Region", backgroundColor: ['blue', 'green', 'yellow', 'orange'], borderColor: ['darkred', 'darkblue', 'darkgreen', 'darkorange'], borderWidth: 1,},],};
   averageChartData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [],  datasets: [ { data: [],  label: "Average transaction amount", borderColor: 'orange' } ] };
   responseTimeData :{ labels: string[]; datasets: { data: number[]; label: string, borderColor: string }[] } = { labels: [],  datasets: [ { data: [],  label: "Average system response time",  borderColor: 'brown' }, { data: [],  label: "Response time",  borderColor: 'blue' } ] };
   options = { responsive: true, maintainAspectRatio: true };
@@ -44,41 +36,36 @@ export class AnalyticsComponent implements OnInit {
   @ViewChildren(BaseChartDirective) charts!: QueryList<BaseChartDirective>;
   regionChart!: BaseChartDirective;
   responseChart!: BaseChartDirective;
-  @ViewChildren('chartElement') chartElements!: QueryList<ElementRef>;
+  totalChart!: BaseChartDirective;
+  averageChart!: BaseChartDirective;
   activeChart: string | null = null;
+  private MAX_ENTRIES: number = 100;
   constructor(private cdr: ChangeDetectorRef,
               private http: HttpClient) {}
   ngOnInit(): void {
     this.connectToSSE();
   }
   ngAfterViewInit(): void {
-    this.regionChart = this.charts.toArray()[2];
-    this.responseChart = this.charts.toArray()[3];
-  }
-
-  setActiveChart(chartName: string, index: number): void {
-    this.activeChart = this.activeChart === chartName ? null : chartName;
-
-    if (this.activeChart) {
-      const element = this.chartElements.toArray()[index].nativeElement;
-      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }
-  isActive(chartName: string): boolean {
-    return this.activeChart === chartName;
+    this.totalChart = this.charts.toArray()[0];
+    this.averageChart = this.charts.toArray()[1];
+    this.responseChart = this.charts.toArray()[2];
+    this.regionChart = this.charts.toArray()[3];
+    console.log("Total Chart Initialized: ", this.totalChart?.chart);
+    console.log("Average Chart Initialized: ", this.averageChart?.chart);
+    console.log("Response Chart Initialized: ", this.responseChart?.chart);
+    console.log("Region Chart Initialized: ", this.regionChart?.chart);
   }
   connectToSSE(): void {
     const transactionSource = new EventSource('http://localhost:8079/transactions/sse');
     transactionSource.onmessage = (event) => {
       const newTransaction: ProcessedTransaction = JSON.parse(event.data);
-      console.log(newTransaction.elapsedTime)
       this.transactions++;
-      if(this.transactions % 100 == 0)
+      if(this.transactions % 50 == 0)
       {
-        // this.updateRegionChartData(newTransaction.origin);
+        this.updateRegionChartData(newTransaction.origin);
         this.updateResponseChart(newTransaction.elapsedTime)
-        // this.updateAverageChart(newTransaction.averageAmount)
-        // this.updateTotalChart(newTransaction.totalAmount)
+        this.updateAverageChart(newTransaction.averageAmount)
+        this.updateTotalChart(newTransaction.totalAmount)
         this.cdr.detectChanges();
       }
     };
@@ -94,21 +81,38 @@ export class AnalyticsComponent implements OnInit {
   updateAverageChart(averageAmount: number): void {
     this.averageChartData.labels.push((this.transactions).toString());
     this.averageChartData.datasets[0].data.push(averageAmount);
-    if(this.charts.last.chart)
-      this.charts.last.chart.update();
+    this.averageChart.chart?.update();
+
+    if (this.averageChartData.labels.length > this.MAX_ENTRIES) {
+      this.sliceData(this.averageChartData)
+    }
   }
   updateTotalChart(totalAmount: number): void {
     this.totalAmount = totalAmount;
     this.totalChartData.labels.push((this.transactions).toString());
     this.totalChartData.datasets[0].data.push(totalAmount);
-    if(this.charts.first.chart)
-      this.charts.first.chart.update();
+    this.totalChart.chart?.update();
+
+    if (this.totalChartData.labels.length > this.MAX_ENTRIES) {
+      this.sliceData(this.totalChartData)
+    }
   }
   updateResponseChart(responseTime: number): void {
     this.responseTimeData.labels.push((this.transactions).toString());
     this.responseTimeData.datasets[1].data.push(responseTime);
     this.responseTimeData.datasets[0].data = this.applyRollingAverage(this.responseTimeData.datasets[1].data, 100);
     this.responseChart.chart?.update();
+
+    if (this.responseTimeData.labels.length > this.MAX_ENTRIES) {
+      this.sliceData(this.responseTimeData)
+    }
+  }
+
+  private sliceData(chart: any): void {
+    chart.labels = this.responseTimeData.labels.slice(-this.MAX_ENTRIES);
+    chart.datasets.forEach((dataset: { data: number[]; label: string, borderColor: string }) => {
+      dataset.data = dataset.data.slice(-this.MAX_ENTRIES);
+    });
   }
 
   private applyRollingAverage(data: number[], windowSize: number): number[] {
@@ -141,5 +145,13 @@ export class AnalyticsComponent implements OnInit {
         alert('Failed to update transaction limits. Please try again.');
       },
     });
+  }
+
+  setActiveChart(chartName: string): void {
+    this.activeChart = this.activeChart === chartName ? null : chartName;
+  }
+
+  isActive(chartName: string): boolean {
+    return this.activeChart === chartName;
   }
 }

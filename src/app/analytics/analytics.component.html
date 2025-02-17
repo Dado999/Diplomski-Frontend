@@ -1,70 +1,58 @@
 <div class="analytics-container">
   <div class="chart-container">
-    <div
-         #chartElement
-         class="single-chart"
-         [class.active]="isActive('totalTransaction')"
-         (click)="setActiveChart('totalTransaction',0)"
-    >
-      <h2>Total Transaction Chart</h2>
-      <canvas
-        baseChart
-        [data]="totalChartData"
-        type="line"
-        class="totalChart"
-        [options]="options"
-      ></canvas>
-    </div>
-    <div
-         #chartElement
-         class="single-chart"
-         [class.active]="isActive('averageTransaction')"
-         (click)="setActiveChart('averageTransaction',1)"
-    >
-      <h2>Average Transaction Chart</h2>
-      <canvas
-        baseChart
-        type="line"
-        [data]="averageChartData"
-        class="averageChart"
-        [options]="options"
-      >
-      </canvas>
-    </div>
-    <div
-         #chartElement
-         class="single-chart"
-         [class.active]="isActive('responseTime')"
-         (click)="setActiveChart('responseTime', 2)"
-    >
-      <h2>Response time</h2>
-      <canvas
-        baseChart
-        type="line"
-        [data]="responseTimeData"
-        class="averageChart"
-        [options]="options"
-      >
-      </canvas>
-    </div>
-    <div
-         #chartElement
-         class="single-chart"
-         [class.active]="isActive('transactionRegion')"
-         (click)="setActiveChart('transactionRegion',3)"
-    >
-      <h2>Transactions by region</h2>
-      <canvas
-        baseChart
-        [data]="regionChartData"
-        type="bar"
-        class="totalChart"
-        [options]="options"
-      >
-      </canvas>
-    </div>
-    </div>
+      <div class="single-chart"
+           [class.active]="isActive('totalTransaction')"
+           (click)="setActiveChart('totalTransaction')">
+        <h2>Total Transaction Chart</h2>
+        <canvas
+          baseChart
+          [data]="totalChartData"
+          type="line"
+          class="totalChart"
+          [options]="options"
+        ></canvas>
+      </div>
+      <div class="single-chart"
+           [class.active]="isActive('averageTransaction')"
+           (click)="setActiveChart('averageTransaction')">
+        <h2>Average Transaction Chart</h2>
+        <canvas
+          baseChart
+          type="line"
+          [data]="averageChartData"
+          class="averageChart"
+          [options]="options"
+        >
+        </canvas>
+      </div>
+      <div class="single-chart"
+           [class.active]="isActive('responseChart')"
+           (click)="setActiveChart('responseChart')">
+        <h2>Response time</h2>
+        <canvas
+          baseChart
+          type="line"
+          [data]="responseTimeData"
+          class="responseChart"
+          [options]="options"
+        >
+        </canvas>
+      </div>
+      <div class="single-chart"
+           [class.active]="isActive('regionChart')"
+           (click)="setActiveChart('regionChart')">
+        <h2>Transactions by region</h2>
+        <canvas
+          baseChart
+          [data]="regionChartData"
+          type="bar"
+          class="regionChart"
+          [options]="options"
+        >
+        </canvas>
+      </div>
   </div>
+</div>
   <div class="card-flex-justify-center">
     <div class="sliders">
       <!-- Label for the first slider -->
@@ -82,7 +70,7 @@
       </mat-slider>
 
       <!-- Label for the second slider -->
-      <label for="slider2">Seconds</label>
+      <label for="slider2">Miliseconds</label>
       <mat-slider
         id="slider2"
         min="0"
